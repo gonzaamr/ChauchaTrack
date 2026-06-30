@@ -5,6 +5,7 @@ const path = require("path");
 require("dotenv").config();
 
 const rutasLogin = require("./login/backend/rutasLogin");
+const PORT = process.env.PORT || 3000;
 
 const app = express();
 
@@ -55,8 +56,8 @@ mongoose
   .then(() => {
     console.log("MongoDB conectado");
 
-    app.listen(process.env.PORT, () => {
-      console.log(`Servidor corriendo en puerto ${process.env.PORT}`);
+    app.listen(PORT, () => {
+        console.log(`Servidor corriendo en puerto ${PORT}`);
     });
   })
   .catch((error) => {
