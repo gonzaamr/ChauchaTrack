@@ -1,4 +1,4 @@
-const API = "http://localhost:5000/api";
+const API = "/api";
 const token = localStorage.getItem("token");
 const usuarioId = localStorage.getItem("usuarioId");
 const nombre = localStorage.getItem("nombre");
