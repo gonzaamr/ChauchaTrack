@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChauchaTrack</title>
+  <link rel="icon" type="image/png" href="assets/favicon-32.png" sizes="32x32">
+  <link rel="icon" type="image/png" href="assets/favicon-64.png" sizes="64x64">
+  <link rel="apple-touch-icon" href="assets/icono-chauchatrack.png">
+  <link rel="stylesheet" href="estilos.css">
+</head>
+
+<body>
+
+<img src="assets/icono-chauchatrack.png" alt="ChauchaTrack" class="logo-flotante">
+
+<div class="app">
+
+  <!-- LOGIN -->
+  <div class="view active" id="viewLogin">
+    <h1>ChauchaTrack</h1>
+
+    <form id="formLogin" autocomplete="off" onsubmit="event.preventDefault(); login();">
+      <input type="email" id="correoLogin" placeholder="Correo" autocomplete="off">
+      <input type="password" id="contraseñaLogin" placeholder="Contraseña" autocomplete="new-password">
+
+      <button type="submit">Ingresar</button>
+    </form>
+
+    <p id="mensajeLogin"></p>
+
+    <div class="links">
+      <button onclick="mostrarRegistro()">Crear cuenta</button>
+      <button onclick="mostrarRecuperacion()">Recuperar contraseña</button>
+    </div>
+  </div>
+
+
+
+
+<!-- REGISTRO PRO -->
+<div class="view" id="viewRegistro">
+  <h1>Crear cuenta 💳</h1>
+
+  <div class="group">
+    <input type="text" id="nombreRegistro" placeholder="Nombre" data-autocapitalize="first">
+    <input type="text" id="apellidoRegistro" placeholder="Apellido" data-autocapitalize="first">
+  </div>
+
+  <input type="text" id="rutRegistro" placeholder="RUT (12.345.678-9)">
+  <input type="tel" id="telefonoRegistro" placeholder="Teléfono">
+
+  <input type="email" id="correoRegistro" placeholder="Correo">
+
+  <div class="group">
+    <input type="password" id="contraseñaRegistro" placeholder="Contraseña">
+    <input type="password" id="confirmarContraseña" placeholder="Confirmar contraseña">
+  </div>
+
+  <button onclick="registro()">Crear cuenta</button>
+
+  <p id="mensajeRegistro"></p>
+
+  <button class="ghost" onclick="volverLogin()">Volver</button>
+</div>
+
+
+
+
+  <!-- RECUPERACIÓN -->
+  <div class="view" id="viewRecuperacion">
+    <h1>Recuperar contraseña</h1>
+
+    <input type="email" id="correoRecuperacion" placeholder="Correo">
+
+    <button onclick="enviarCodigo()">Enviar código</button>
+
+    <p id="mensajeRecuperacion"></p>
+
+    <button class="ghost" onclick="volverLogin()">Volver</button>
+  </div>
+
+
+
+
+
+  <!-- CÓDIGO -->
+  <div class="view" id="viewCodigo">
+    <h1>Verificar código</h1>
+
+    <input type="text" id="codigoRecuperacion" placeholder="Código recibido">
+
+    <button onclick="verificarCodigo()">Verificar código</button>
+
+    <p id="mensajeCodigo"></p>
+  </div>
+
+
+
+
+
+  <!-- NUEVA CONTRASEÑA -->
+  <div class="view" id="viewNuevaPass">
+    <h1>Nueva contraseña</h1>
+
+    <input type="password" id="nuevaContraseña" placeholder="Nueva contraseña">
+
+    <button onclick="cambiarContraseña()">Cambiar contraseña</button>
+
+    <p id="mensajeCambio"></p>
+  </div>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

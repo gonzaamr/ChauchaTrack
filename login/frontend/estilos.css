@@ -1,0 +1,231 @@
+/* =============================================
+   CHAUCHATRACK — Login Dark Theme
+   ============================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --bg-app:        #0d1117;
+  --bg-card:       #161b22;
+  --bg-input:      #1c2333;
+  --bg-subtle:     #21262d;
+  --border:        rgba(255,255,255,0.08);
+  --border-hover:  rgba(255,255,255,0.16);
+  --accent:        #00d9ff;
+  --accent-dim:    #00b4d8;
+  --accent-glow:   rgba(0,217,255,0.15);
+  --income:        #23d18b;
+  --danger:        #f85149;
+  --text-primary:  #e6edf3;
+  --text-secondary:#8b949e;
+  --text-muted:    #484f58;
+  --r-md:  10px;
+  --r-lg:  14px;
+  --font: 'Inter', 'Segoe UI', system-ui, sans-serif;
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: var(--font);
+  font-size: 14px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding-top: 18vh;
+  background: var(--bg-app);
+  background-image:
+    radial-gradient(circle at 15% 25%, rgba(0,217,255,0.06) 0%, transparent 45%),
+    radial-gradient(circle at 85% 75%, rgba(35,209,139,0.05) 0%, transparent 45%);
+  -webkit-font-smoothing: antialiased;
+}
+
+.app {
+  width: 400px;
+  position: relative;
+  min-height: 480px;
+}
+
+.logo-flotante {
+  position: fixed;
+  left: 50%;
+  top: 25%;
+  transform: translate(-50%, -50%);
+  width: 110px;
+  height: 110px;
+  object-fit: contain;
+  pointer-events: none;
+  z-index: 1;
+  filter: drop-shadow(0 0 24px rgba(0,217,255,0.25));
+  opacity: 0.9;
+}
+
+.view {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  padding: 36px 32px 30px;
+  border-radius: var(--r-lg);
+  box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+  opacity: 0;
+  transform: translateX(16px) scale(0.98);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.view.active {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+  pointer-events: auto;
+  z-index: 10;
+}
+
+h1 {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.6px;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+input {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  font-size: 14px;
+  font-family: var(--font);
+  color: var(--text-primary);
+  background: var(--bg-input);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  -webkit-appearance: none;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input::placeholder { color: var(--text-muted); }
+
+input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+  transform: none;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: var(--r-md);
+  background: var(--accent);
+  color: #0d1117;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: var(--font);
+  cursor: pointer;
+  letter-spacing: 0.1px;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+}
+
+button:hover {
+  background: var(--accent-dim);
+  box-shadow: 0 0 20px var(--accent-glow);
+  transform: translateY(-1px);
+}
+
+button:active { transform: scale(0.98); }
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+#mensajeLogin,
+#mensajeRegistro,
+#mensajeRecuperacion,
+#mensajeCodigo,
+#mensajeCambio {
+  font-size: 12.5px;
+  color: var(--danger);
+  text-align: center;
+  min-height: 1em;
+}
+
+.links {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.links button {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 13px;
+  box-shadow: none;
+}
+
+.links button:hover {
+  background: var(--bg-subtle);
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+  box-shadow: none;
+  transform: none;
+}
+
+.ghost {
+  background: var(--bg-subtle) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text-secondary) !important;
+  font-size: 13px;
+  box-shadow: none !important;
+}
+
+.ghost:hover {
+  background: var(--bg-input) !important;
+  border-color: var(--border-hover) !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.group { display: flex; gap: 10px; }
+.group input { flex: 1; }
+
+@media (max-width: 440px) {
+  body {
+    padding-top: 32px;
+    justify-content: flex-start;
+  }
+
+  .logo-flotante {
+    position: static;
+    transform: none;
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 18px;
+    display: block;
+  }
+
+  .app { width: calc(100vw - 32px); }
+  .view { padding: 28px 20px 22px; }
+}
