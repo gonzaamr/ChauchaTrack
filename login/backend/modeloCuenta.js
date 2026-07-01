@@ -45,6 +45,10 @@ const cuentaSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  fechaConexion: {
+    type: Date,
+    default: null
+  },
   createdAt: {
     type: Date,
     default: Date.now

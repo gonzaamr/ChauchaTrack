@@ -57,12 +57,20 @@ function normalizarMovimiento(movimiento, cuenta = null) {
   };
 }
 
-async function obtenerSaldoInicialTotal(usuarioId) {
-  const cuentas = await Cuenta.find({ usuarioId }).select("saldoInicial");
-  return cuentas.reduce((sum, c) => sum + (c.saldoInicial || 0), 0);
+async function obtenerBalanceTotalCuentas(usuarioId) {
+  const cuentas = await Cuenta.find({ usuarioId });
+  const saldos = await Promise.all(cuentas.map(async (cuenta) => {
+    if (cuenta.tipo === "bancaria") {
+      return cuenta.saldo ?? cuenta.saldoBanco ?? 0;
+    }
+
+    return calcularSaldoManual(cuenta);
+  }));
+
+  return saldos.reduce((sum, saldo) => sum + saldo, 0);
 }
 
-function construirResumen(movimientos, saldoInicialTotal = 0) {
+function construirResumen(movimientos, balance = 0) {
   const totalIngresos = movimientos
     .filter((m) => m.monto > 0)
     .reduce((sum, m) => sum + m.monto, 0);
@@ -74,11 +82,7 @@ function construirResumen(movimientos, saldoInicialTotal = 0) {
   return {
     totalIngresos,
     totalGastos,
-    // Balance = saldo inicial de todas las cuentas + ingresos del período - gastos
-    // del período. Antes era solo ingresos - gastos, lo que mezclaba "flujo del
-    // período" con "dinero disponible" y podía dar negativo aunque el usuario
-    // todavía tuviera saldo (ver diagnóstico).
-    balance: saldoInicialTotal + totalIngresos - totalGastos,
+    balance,
     cantidadMovimientos: movimientos.length
   };
 }
@@ -149,21 +153,40 @@ async function sincronizarCuentasFintoc(usuario) {
 
   for (const cuenta of cuentasFintoc) {
     const saldo = cuenta.balance?.available ?? cuenta.balance?.current ?? 0;
+    const ahora = new Date();
+    const cuentaExistente = await Cuenta.findOne({
+      usuarioId: usuario._id,
+      fintocAccountId: cuenta.id
+    }).select("fechaConexion createdAt");
+    const fechaConexion = cuentaExistente?.fechaConexion || cuentaExistente?.createdAt || ahora;
+
     const cuentaDb = await Cuenta.findOneAndUpdate(
       { usuarioId: usuario._id, fintocAccountId: cuenta.id },
       {
-        usuarioId: usuario._id,
-        nombre: cuenta.name || cuenta.official_name || "Cuenta bancaria",
-        tipo: "bancaria",
-        tipoCuenta: cuenta.type || "bank_account",
-        fintocAccountId: cuenta.id,
-        numero: cuenta.number || null,
-        moneda: cuenta.currency || "CLP",
-        saldo,
-        saldoBanco: saldo
+        $set: {
+          usuarioId: usuario._id,
+          nombre: cuenta.name || cuenta.official_name || "Cuenta bancaria",
+          tipo: "bancaria",
+          tipoCuenta: cuenta.type || "bank_account",
+          fintocAccountId: cuenta.id,
+          numero: cuenta.number || null,
+          moneda: cuenta.currency || "CLP",
+          saldo,
+          saldoBanco: saldo,
+          fechaConexion
+        },
+        $setOnInsert: {
+          saldoInicial: saldo
+        }
       },
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );
+
+    await Movimiento.deleteMany({
+      usuarioId: usuario._id,
+      cuentaId: cuentaDb._id,
+      tipoBanco: "saldo_inicial"
+    });
 
     cuentas.push(cuentaDb);
   }
@@ -203,6 +226,14 @@ async function sincronizarMovimientosFintoc(usuario) {
     }
 
     for (const movimiento of movimientos) {
+      const fechaMovimiento = new Date(movimiento.post_date || movimiento.transaction_date || 0);
+
+      // Ignoramos movimientos anteriores a la conexión: desde ese momento
+      // empiezan a afectar ingresos y gastos dentro de la app.
+      if (cuenta.fechaConexion && fechaMovimiento < cuenta.fechaConexion) {
+        continue;
+      }
+
       const existe = await Movimiento.exists({
         usuarioId: usuario._id,
         movimientoExternoId: movimiento.id
@@ -316,6 +347,7 @@ async function crearFiltroMovimientos(query) {
 
 async function obtenerMovimientosFiltrados(query) {
   const filtro = await crearFiltroMovimientos(query);
+  filtro.tipoBanco = { $ne: "saldo_inicial" };
 
   return Movimiento.find(filtro)
     .populate("cuentaId")
@@ -348,7 +380,7 @@ function obtenerCategoriaMovimiento(movimiento, mapaCategorias) {
     || "sin_categoria";
 }
 
-function sumarMovimientos(movimientos, saldoInicialTotal = 0) {
+function sumarMovimientos(movimientos, balance = 0) {
   const ingresosTotales = movimientos
     .filter((mov) => mov.monto > 0)
     .reduce((sum, mov) => sum + mov.monto, 0);
@@ -360,9 +392,7 @@ function sumarMovimientos(movimientos, saldoInicialTotal = 0) {
   return {
     ingresosTotales,
     gastosTotales,
-    // Misma corrección que en construirResumen: balance = saldo inicial + flujo
-    // del período, no solo el flujo.
-    balance: saldoInicialTotal + ingresosTotales - gastosTotales
+    balance
   };
 }
 
@@ -1071,8 +1101,8 @@ router.get("/movimientos", async (req, res) => {
 
     const movimientos = await obtenerMovimientosFiltrados(req.query);
     const normalizados = movimientos.map((mov) => normalizarMovimiento(mov, mov.cuentaId));
-    const saldoInicialTotal = await obtenerSaldoInicialTotal(usuarioId);
-    res.json({ movimientos: normalizados, resumen: construirResumen(movimientos, saldoInicialTotal) });
+    const balance = await obtenerBalanceTotalCuentas(usuarioId);
+    res.json({ movimientos: normalizados, resumen: construirResumen(movimientos, balance) });
   } catch (err) {
     console.error("Error movimientos:", err);
     res.status(500).json({ error: err.message || "Error interno" });
@@ -1229,11 +1259,11 @@ router.get("/fintoc/movimientos", async (req, res) => {
     }
 
     const movimientos = await obtenerMovimientosFiltrados(req.query);
-    const saldoInicialTotal = await obtenerSaldoInicialTotal(usuarioId);
+    const balance = await obtenerBalanceTotalCuentas(usuarioId);
 
     res.json({
       movimientos: movimientos.map((mov) => normalizarMovimiento(mov, mov.cuentaId)),
-      resumen: construirResumen(movimientos, saldoInicialTotal)
+      resumen: construirResumen(movimientos, balance)
     });
   } catch (err) {
     console.error("Error movimientos:", err);
@@ -1344,7 +1374,7 @@ router.get("/estadisticas/resumen", async (req, res) => {
       usuarioId,
       fecha: { $gte: inicio, $lt: fin }
     });
-    const totales = sumarMovimientos(movimientos, await obtenerSaldoInicialTotal(usuarioId));
+    const totales = sumarMovimientos(movimientos, await obtenerBalanceTotalCuentas(usuarioId));
     const presupuesto = await calcularEstadoPresupuesto(usuario);
 
     res.json({

@@ -221,7 +221,7 @@
             <div class="leyenda-item">
               <span class="leyenda-dot" style="background:#3498db;"></span>
               <span class="leyenda-linea balance"></span>
-              Balance acumulado
+              Balance histórico
             </div>
           </div>
 
@@ -407,25 +407,47 @@
       <input type="hidden" id="manualMovimientoId" />
 
       <div class="form-manual">
-        <select id="manualCuenta"></select>
-        <input type="number" id="manualMonto" placeholder="Monto (negativo si es gasto)" inputmode="decimal" />
-        <input type="text" id="manualDescripcion" placeholder="Descripción" data-autocapitalize="first" />
-        <input type="date" id="manualFecha" />
-        <select id="manualCategoria">
-          <option value="">Sin categoría</option>
-          <option value="comida">Comida</option>
-          <option value="transporte">Transporte</option>
-          <option value="ropa">Ropa</option>
-          <option value="higiene">Higiene</option>
-          <option value="ocio">Ocio</option>
-          <option value="salud">Salud</option>
-          <option value="educacion">Educación</option>
-          <option value="servicios">Servicios</option>
-          <option value="transferencia">Transferencia</option>
-          <option value="ahorro">Ahorro</option>
-          <option value="otro">Otro</option>
-        </select>
-      </div>
+  <select id="manualCuenta"></select>
+
+  <select id="manualTipoMovimiento" onchange="actualizarCategoriaSegunTipo()">
+    <option value="gasto">📉 Gasto</option>
+    <option value="ingreso">📈 Ingreso</option>
+  </select>
+
+  <input
+    type="number"
+    id="manualMonto"
+    placeholder="Monto"
+    inputmode="decimal"
+    min="0"
+  />
+
+  <input
+    type="text"
+    id="manualDescripcion"
+    placeholder="Descripción"
+    data-autocapitalize="first"
+  />
+
+  <input type="date" id="manualFecha" />
+
+  <div id="manualCategoriaContainer">
+    <select id="manualCategoria">
+      <option value="">Sin categoría</option>
+      <option value="comida">Comida</option>
+      <option value="transporte">Transporte</option>
+      <option value="ropa">Ropa</option>
+      <option value="higiene">Higiene</option>
+      <option value="ocio">Ocio</option>
+      <option value="salud">Salud</option>
+      <option value="educacion">Educación</option>
+      <option value="servicios">Servicios</option>
+      <option value="transferencia">Transferencia</option>
+      <option value="ahorro">Ahorro</option>
+      <option value="otro">Otro</option>
+    </select>
+  </div>
+</div>
 
       <button onclick="guardarMovimientoManual()">Guardar</button>
       <button class="cerrar-modal" onclick="cerrarModalMovimientoManual()">Cerrar</button>
